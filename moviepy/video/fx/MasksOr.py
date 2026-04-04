@@ -36,17 +36,4 @@ class MasksOr(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        # to ensure that 'or' of two ImageClips will be an ImageClip
-        if isinstance(self.other_clip, ImageClip):
-            self.other_clip = self.other_clip.img
-
-        if isinstance(self.other_clip, np.ndarray):
-            return clip.image_transform(
-                lambda frame: np.maximum(frame, self.other_clip)
-            )
-        else:
-            return clip.transform(
-                lambda get_frame, t: np.maximum(
-                    get_frame(t), self.other_clip.get_frame(t)
-                )
-            )
+        pass

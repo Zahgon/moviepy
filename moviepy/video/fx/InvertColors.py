@@ -14,5 +14,4 @@ class InvertColors(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        maxi = 1.0 if clip.is_mask else 255
-        return clip.image_transform(lambda f: maxi - f)
+        pass

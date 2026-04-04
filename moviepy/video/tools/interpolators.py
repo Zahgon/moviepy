@@ -120,7 +120,7 @@ class Trajectory:
 
         Trajectory : new instance with the new X position included.
         """
-        return Trajectory(self.tt, self.xx + x, self.yy)
+        pass
 
     def addy(self, y):
         """Adds a value to the ``yy`` position of the trajectory.
@@ -137,12 +137,11 @@ class Trajectory:
 
         Trajectory : new instance with the new Y position included.
         """
-        return Trajectory(self.tt, self.xx, self.yy + y)
+        pass
 
     def update_interpolators(self):
         """Updates the internal X and Y position interpolators for the instance."""
-        self.xi = Interpolator(self.tt, self.xx)
-        self.yi = Interpolator(self.tt, self.yy)
+        pass
 
     def txy(self, tms=False):
         """Returns all times with the X and Y values of each position.
@@ -153,7 +152,7 @@ class Trajectory:
         tms : bool, optional
           If is ``True``, the time will be returned in milliseconds.
         """
-        return zip((1000 if tms else 1) * self.tt, self.xx, self.yy)
+        pass
 
     def to_file(self, filename):
         """Saves the trajectory data in a text file.
@@ -164,12 +163,7 @@ class Trajectory:
         filename : str
           Path to the location of the new trajectory text file.
         """
-        np.savetxt(
-            filename,
-            np.array(list(self.txy(tms=True))),
-            fmt="%d",
-            delimiter="\t",
-        )
+        pass
 
     @staticmethod
     def from_file(filename):
@@ -187,9 +181,7 @@ class Trajectory:
 
         Trajectory : new instance loaded from text file.
         """
-        arr = np.loadtxt(filename, delimiter="\t")
-        tt, xx, yy = arr.T
-        return Trajectory(1.0 * tt / 1000, xx, yy)
+        pass
 
     @staticmethod
     def save_list(trajs, filename):
@@ -204,15 +196,7 @@ class Trajectory:
         filename : str
           Path of the text file that will store the trajectories data.
         """
-        N = len(trajs)
-        arr = np.hstack([np.array(list(t.txy(tms=True))) for t in trajs])
-        np.savetxt(
-            filename,
-            arr,
-            fmt="%d",
-            delimiter="\t",
-            header="\t".join(N * ["t(ms)", "x", "y"]),
-        )
+        pass
 
     @staticmethod
     def load_list(filename):
@@ -230,9 +214,4 @@ class Trajectory:
 
         list : List of trajectories loaded from the file.
         """
-        arr = np.loadtxt(filename, delimiter="\t").T
-        Nlines = arr.shape[0]
-        return [
-            Trajectory(tt=1.0 * a[0] / 1000, xx=a[1], yy=a[2])
-            for a in np.split(arr, Nlines / 3)
-        ]
+        pass

@@ -61,7 +61,7 @@ class Clip:
 
     def copy(self):
         """Allows the usage of ``.copy()`` in clips as chained methods invocation."""
-        return _copy.copy(self)
+        pass
 
     @convert_parameter_to_seconds(["t"])
     def get_frame(self, t):
@@ -74,17 +74,7 @@ class Clip:
         t : float or tuple or str
           Moment of the clip whose frame will be returned.
         """
-        # Coming soon: smart error handling for debugging at this point
-        if self.memoize:
-            if t == self.memoized_t:
-                return self.memoized_frame
-            else:
-                frame = self.frame_function(t)
-                self.memoized_t = t
-                self.memoized_frame = frame
-                return frame
-        else:
-            return self.frame_function(t)
+        pass
 
     def transform(self, func, apply_to=None, keep_duration=True):
         """General processing of a clip.
@@ -123,28 +113,7 @@ class Clip:
         >>> new_clip = clip.transform(filter, apply_to='mask')
 
         """
-        if apply_to is None:
-            apply_to = []
-
-        # mf = copy(self.frame_function)
-        new_clip = self.with_updated_frame_function(lambda t: func(self.get_frame, t))
-
-        if not keep_duration:
-            new_clip.duration = None
-            new_clip.end = None
-
-        if isinstance(apply_to, str):
-            apply_to = [apply_to]
-
-        for attribute in apply_to:
-            attribute_value = getattr(new_clip, attribute, None)
-            if attribute_value is not None:
-                new_attribute_value = attribute_value.transform(
-                    func, keep_duration=keep_duration
-                )
-                setattr(new_clip, attribute, new_attribute_value)
-
-        return new_clip
+        pass
 
     def time_transform(self, time_func, apply_to=None, keep_duration=False):
         """
@@ -179,14 +148,7 @@ class Clip:
             new_clip = clip.time_transform(lambda t: 3-t)
 
         """
-        if apply_to is None:
-            apply_to = []
-
-        return self.transform(
-            lambda get_frame, t: get_frame(time_func(t)),
-            apply_to,
-            keep_duration=keep_duration,
-        )
+        pass
 
     def with_effects(self, effects: List["Effect"]):
         """Return a copy of the current clip with the effects applied
@@ -197,14 +159,7 @@ class Clip:
 
         >>> clip.with_effects([afx.VolumeX(0.5), vfx.Resize(0.3), vfx.Mirrorx()])
         """
-        new_clip = self.copy()
-        for effect in effects:
-            # We always copy effect before using it, see Effect.copy
-            # to see why we need to
-            effect_copy = effect.copy()
-            new_clip = effect_copy.apply(new_clip)
-
-        return new_clip
+        pass
 
     @apply_to_mask
     @apply_to_audio
@@ -241,11 +196,7 @@ class Clip:
           ``end`` attribute, the ``duration`` attribute of the clip will be
           updated to ``end - start``.
         """
-        self.start = t
-        if (self.duration is not None) and change_end:
-            self.end = t + self.duration
-        elif self.end is not None:
-            self.duration = self.end - self.start
+        pass
 
     @apply_to_mask
     @apply_to_audio
@@ -272,14 +223,7 @@ class Clip:
         t : float or tuple or str
           New ``end`` attribute value for the clip.
         """
-        self.end = t
-        if self.end is None:
-            return
-        if self.start is None:
-            if self.duration is not None:
-                self.start = max(0, t - self.duration)
-        else:
-            self.duration = self.end - self.start
+        pass
 
     @apply_to_mask
     @apply_to_audio
@@ -304,14 +248,7 @@ class Clip:
           If ``True``, the ``end`` attribute value of the clip will be adjusted
           accordingly to the new duration using ``clip.start + duration``.
         """
-        self.duration = duration
-
-        if change_end:
-            self.end = None if (duration is None) else (self.start + duration)
-        else:
-            if self.duration is None:
-                raise ValueError("Cannot change clip start when new duration is None")
-            self.start = self.end - duration
+        pass
 
     @outplace
     def with_updated_frame_function(self, frame_function):
@@ -324,7 +261,7 @@ class Clip:
         frame_function : function
           New frame creator function for the clip.
         """
-        self.frame_function = frame_function
+        pass
 
     def with_fps(self, fps, change_duration=False):
         """Returns a copy of the clip with a new default fps for functions like
@@ -341,15 +278,7 @@ class Clip:
           match the new fps (conserving all frames 1:1). For example, if the
           fps is halved in this mode, the duration will be doubled.
         """
-        if change_duration:
-            from moviepy.video.fx.MultiplySpeed import MultiplySpeed
-
-            newclip = self.with_effects([MultiplySpeed(fps / self.fps)])
-        else:
-            newclip = self.copy()
-
-        newclip.fps = fps
-        return newclip
+        pass
 
     @outplace
     def with_is_mask(self, is_mask):
@@ -361,7 +290,7 @@ class Clip:
         is_mask : bool
           New ``is_mask`` attribute value for the clip.
         """
-        self.is_mask = is_mask
+        pass
 
     @outplace
     def with_memoize(self, memoize):
@@ -373,7 +302,7 @@ class Clip:
         memoize : bool
           Indicates if the clip should keep the last frame read in memory.
         """
-        self.memoize = memoize
+        pass
 
     @convert_parameter_to_seconds(["start_time", "end_time"])
     @apply_to_mask
@@ -409,49 +338,7 @@ class Clip:
           If ``end_time`` is provided or if the clip has a duration attribute,
           the duration of the returned clip is set automatically.
         """
-        if start_time < 0:
-            # Make this more Python-like, a negative value means to move
-            # backward from the end of the clip
-            start_time = self.duration + start_time  # Remember start_time is negative
-
-        if (self.duration is not None) and (start_time >= self.duration):
-            raise ValueError(
-                "start_time (%.02f) " % start_time
-                + "should be smaller than the clip's "
-                + "duration (%.02f)." % self.duration
-            )
-
-        new_clip = self.time_transform(lambda t: t + start_time, apply_to=[])
-
-        if (end_time is None) and (self.duration is not None):
-            end_time = self.duration
-
-        elif (end_time is not None) and (end_time < 0):
-            if self.duration is None:
-                raise ValueError(
-                    (
-                        "Subclip with negative times (here %s)"
-                        " can only be extracted from clips with a ``duration``"
-                    )
-                    % (str((start_time, end_time)))
-                )
-
-            else:
-                end_time = self.duration + end_time
-
-        if end_time is not None:
-            # Allow a slight tolerance to account for rounding errors
-            if (self.duration is not None) and (end_time - self.duration > 0.00000001):
-                raise ValueError(
-                    "end_time (%.02f) " % end_time
-                    + "should be smaller or equal to the clip's "
-                    + "duration (%.02f)." % self.duration
-                )
-
-            new_clip.duration = end_time - start_time
-            new_clip.end = new_clip.start + new_clip.duration
-
-        return new_clip
+        pass
 
     @convert_parameter_to_seconds(["start_time", "end_time"])
     def with_section_cut_out(self, start_time, end_time):
@@ -477,35 +364,19 @@ class Clip:
         end_time : float or tuple or str
           Moment until which frames will be ignored in the resulting output.
         """
-        new_clip = self.time_transform(
-            lambda t: t + (t >= start_time) * (end_time - start_time),
-            apply_to=["audio", "mask"],
-        )
-
-        if self.duration is not None:
-            return new_clip.with_duration(self.duration - (end_time - start_time))
-        else:  # pragma: no cover
-            return new_clip
+        pass
 
     def with_speed_scaled(self, factor: float = None, final_duration: float = None):
         """Returns a clip playing the current clip but at a speed multiplied
         by ``factor``. For info on the parameters, please see ``vfx.MultiplySpeed``.
         """
-        from moviepy.video.fx.MultiplySpeed import MultiplySpeed
-
-        return self.with_effects(
-            [MultiplySpeed(factor=factor, final_duration=final_duration)]
-        )
+        pass
 
     def with_volume_scaled(self, factor: float, start_time=None, end_time=None):
         """Returns a new clip with audio volume multiplied by the value `factor`.
         For info on the parameters, please see ``afx.MultiplyVolume``
         """
-        from moviepy.audio.fx.MultiplyVolume import MultiplyVolume
-
-        return self.with_effects(
-            [MultiplyVolume(factor=factor, start_time=start_time, end_time=end_time)]
-        )
+        pass
 
     @requires_duration
     @use_clip_fps_by_default
@@ -550,21 +421,7 @@ class Clip:
             print([frame[0,:,0].max()
                   for frame in myclip.iter_frames()])
         """
-        logger = proglog.default_bar_logger(logger)
-        for frame_index in logger.iter_bar(
-            frame_index=np.arange(0, int(self.duration * fps))
-        ):
-            # int is used to ensure that floating point errors are rounded
-            # down to the nearest integer
-            t = frame_index / fps
-
-            frame = self.get_frame(t)
-            if (dtype is not None) and (frame.dtype != dtype):
-                frame = frame.astype(dtype)
-            if with_times:
-                yield t, frame
-            else:
-                yield frame
+        pass
 
     @convert_parameter_to_seconds(["t"])
     def is_playing(self, t):
@@ -574,24 +431,7 @@ class Clip:
         array, returns False if none of the ``t`` is in the clip, else returns a
         vector [b_1, b_2, b_3...] where b_i is true if tti is in the clip.
         """
-        if isinstance(t, np.ndarray):
-            # is the whole list of t outside the clip ?
-            tmin, tmax = t.min(), t.max()
-
-            if (self.end is not None) and (tmin >= self.end):
-                return False
-
-            if tmax < self.start:
-                return False
-
-            # If we arrive here, a part of t falls in the clip
-            result = 1 * (t >= self.start)
-            if self.end is not None:
-                result *= t <= self.end
-            return result
-
-        else:
-            return (t >= self.start) and ((self.end is None) or (t < self.end))
+        pass
 
     def close(self):
         """Release any resources that are in use."""

@@ -21,19 +21,4 @@ class FadeOut(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if clip.duration is None:
-            raise ValueError("Attribute 'duration' not set")
-
-        if self.final_color is None:
-            self.final_color = 0 if clip.is_mask else [0, 0, 0]
-
-        self.final_color = np.array(self.final_color)
-
-        def filter(get_frame, t):
-            if (clip.duration - t) >= self.duration:
-                return get_frame(t)
-            else:
-                fading = 1.0 * (clip.duration - t) / self.duration
-                return fading * get_frame(t) + (1 - fading) * self.final_color
-
-        return clip.transform(filter)
+        pass

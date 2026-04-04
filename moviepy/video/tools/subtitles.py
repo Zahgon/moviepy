@@ -72,14 +72,7 @@ class SubtitlesClip(VideoClip):
                 raise ValueError("Argument font is required if make_textclip is None.")
 
             def make_textclip(txt):
-                return TextClip(
-                    font=self.font,
-                    text=txt,
-                    font_size=24,
-                    color="#ffffff",
-                    stroke_color="#000000",
-                    stroke_width=1,
-                )
+                pass
 
         self.make_textclip = make_textclip
         self.start = 0
@@ -91,32 +84,13 @@ class SubtitlesClip(VideoClip):
             to generate it yet. If there is no subtitle to show at t, return
             false.
             """
-            sub = [
-                ((text_start, text_end), text)
-                for ((text_start, text_end), text) in self.textclips.keys()
-                if (text_start <= t < text_end)
-            ]
-            if not sub:
-                sub = [
-                    ((text_start, text_end), text)
-                    for ((text_start, text_end), text) in self.subtitles
-                    if (text_start <= t < text_end)
-                ]
-                if not sub:
-                    return False
-            sub = sub[0]
-            if sub not in self.textclips.keys():
-                self.textclips[sub] = self.make_textclip(sub[1])
-
-            return sub
+            pass
 
         def frame_function(t):
-            sub = add_textclip_if_none(t)
-            return self.textclips[sub].get_frame(t) if sub else np.array([[[0, 0, 0]]])
+            pass
 
         def make_mask_frame(t):
-            sub = add_textclip_if_none(t)
-            return self.textclips[sub].mask.get_frame(t) if sub else np.array([[0]])
+            pass
 
         self.frame_function = frame_function
         hasmask = bool(self.make_textclip("T").mask)
@@ -127,24 +101,7 @@ class SubtitlesClip(VideoClip):
         from start_time to end_time. The first and last times will be cropped so as
         to be exactly start_time and end_time if possible.
         """
-
-        def is_in_subclip(t1, t2):
-            try:
-                return (start_time <= t1 < end_time) or (start_time < t2 <= end_time)
-            except Exception:
-                return False
-
-        def try_cropping(t1, t2):
-            try:
-                return max(t1, start_time), min(t2, end_time)
-            except Exception:
-                return t1, t2
-
-        return [
-            (try_cropping(t1, t2), txt)
-            for ((t1, t2), txt) in self.subtitles
-            if is_in_subclip(t1, t2)
-        ]
+        pass
 
     def __iter__(self):
         return iter(self.subtitles)
@@ -154,23 +111,17 @@ class SubtitlesClip(VideoClip):
 
     def __str__(self):
         def to_srt(sub_element):
-            (start_time, end_time), text = sub_element
-            formatted_start_time = convert_to_seconds(start_time)
-            formatted_end_time = convert_to_seconds(end_time)
-            return "%s - %s\n%s" % (formatted_start_time, formatted_end_time, text)
+            pass
 
         return "\n\n".join(to_srt(sub) for sub in self.subtitles)
 
     def match_expr(self, expr):
         """Matches a regular expression against the subtitles of the clip."""
-        return SubtitlesClip(
-            [sub for sub in self.subtitles if re.findall(expr, sub[1]) != []]
-        )
+        pass
 
     def write_srt(self, filename):
         """Writes an ``.srt`` file with the content of the clip."""
-        with open(filename, "w+") as file:
-            file.write(str(self))
+        pass
 
 
 @convert_path_to_string("filename")
@@ -182,17 +133,4 @@ def file_to_subtitles(filename, encoding=None):
 
     Only works for '.srt' format for the moment.
     """
-    times_texts = []
-    current_times = None
-    current_text = ""
-    with open(filename, "r", encoding=encoding) as file:
-        for line in file:
-            times = re.findall("([0-9]*:[0-9]*:[0-9]*,[0-9]*)", line)
-            if times:
-                current_times = [convert_to_seconds(t) for t in times]
-            elif line.strip() == "":
-                times_texts.append((current_times, current_text.strip("\n")))
-                current_times, current_text = None, ""
-            elif current_times:
-                current_text += line
-    return times_texts
+    pass

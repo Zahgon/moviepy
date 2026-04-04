@@ -113,22 +113,14 @@ class ImageSequenceClip(VideoClip):
             self.fps = len(sequence) / self.duration
 
         def find_image_index(t):
-            return max(
-                [i for i in range(len(self.sequence)) if self.images_starts[i] <= t]
-            )
+            pass
 
         if fromfiles:
             self.last_index = None
             self.last_image = None
 
             def frame_function(t):
-                index = find_image_index(t)
-
-                if index != self.last_index:
-                    self.last_image = imread(self.sequence[index])[:, :, :3]
-                    self.last_index = index
-
-                return self.last_image
+                pass
 
             if with_mask and (imread(self.sequence[0]).shape[2] == 4):
                 self.mask = VideoClip(is_mask=True)
@@ -136,13 +128,7 @@ class ImageSequenceClip(VideoClip):
                 self.mask.last_image = None
 
                 def mask_frame_function(t):
-                    index = find_image_index(t)
-                    if index != self.mask.last_index:
-                        frame = imread(self.sequence[index])[:, :, 3]
-                        self.mask.last_image = frame.astype(float) / 255
-                        self.mask.last_index = index
-
-                    return self.mask.last_image
+                    pass
 
                 self.mask.frame_function = mask_frame_function
                 self.mask.size = mask_frame_function(0).shape[:2][::-1]
@@ -150,15 +136,13 @@ class ImageSequenceClip(VideoClip):
         else:
 
             def frame_function(t):
-                index = find_image_index(t)
-                return self.sequence[index][:, :, :3]
+                pass
 
             if with_mask and (self.sequence[0].shape[2] == 4):
                 self.mask = VideoClip(is_mask=True)
 
                 def mask_frame_function(t):
-                    index = find_image_index(t)
-                    return 1.0 * self.sequence[index][:, :, 3] / 255
+                    pass
 
                 self.mask.frame_function = mask_frame_function
                 self.mask.size = mask_frame_function(0).shape[:2][::-1]

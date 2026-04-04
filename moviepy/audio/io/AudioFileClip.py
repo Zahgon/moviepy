@@ -80,6 +80,4 @@ class AudioFileClip(AudioClip):
 
     def close(self):
         """Close the internal reader."""
-        if self.reader:
-            self.reader.close()
-            self.reader = None
+        pass

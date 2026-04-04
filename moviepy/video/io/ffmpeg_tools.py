@@ -32,30 +32,7 @@ def ffmpeg_extract_subclip(
       Path to the output file. Defaults to
       ``<inputfile_name>SUB<start_time>_<end_time><ext>``.
     """
-    if not outputfile:
-        name, ext = os.path.splitext(inputfile)
-        t1, t2 = [int(1000 * t) for t in [start_time, end_time]]
-        outputfile = "%sSUB%d_%d%s" % (name, t1, t2, ext)
-
-    cmd = [
-        FFMPEG_BINARY,
-        "-y",
-        "-ss",
-        "%0.2f" % start_time,
-        "-i",
-        ffmpeg_escape_filename(inputfile),
-        "-t",
-        "%0.2f" % (end_time - start_time),
-        "-map",
-        "0",
-        "-vcodec",
-        "copy",
-        "-acodec",
-        "copy",
-        "-copyts",
-        ffmpeg_escape_filename(outputfile),
-    ]
-    subprocess_call(cmd, logger=logger)
+    pass
 
 
 @convert_path_to_string(("videofile", "audiofile", "outputfile"))
@@ -87,21 +64,7 @@ def ffmpeg_merge_video_audio(
     audio_codec : str, optional
       Audio codec used by FFmpeg in the merge.
     """
-    cmd = [
-        FFMPEG_BINARY,
-        "-y",
-        "-i",
-        ffmpeg_escape_filename(audiofile),
-        "-i",
-        ffmpeg_escape_filename(videofile),
-        "-vcodec",
-        video_codec,
-        "-acodec",
-        audio_codec,
-        ffmpeg_escape_filename(outputfile),
-    ]
-
-    subprocess_call(cmd, logger=logger)
+    pass
 
 
 @convert_path_to_string(("inputfile", "outputfile"))
@@ -123,18 +86,7 @@ def ffmpeg_extract_audio(inputfile, outputfile, bitrate=3000, fps=44100, logger=
     fps : int, optional
       Frame rate for the new audio file.
     """
-    cmd = [
-        FFMPEG_BINARY,
-        "-y",
-        "-i",
-        ffmpeg_escape_filename(inputfile),
-        "-ab",
-        "%dk" % bitrate,
-        "-ar",
-        "%d" % fps,
-        ffmpeg_escape_filename(outputfile),
-    ]
-    subprocess_call(cmd, logger=logger)
+    pass
 
 
 @convert_path_to_string(("inputfile", "outputfile"))
@@ -153,16 +105,7 @@ def ffmpeg_resize(inputfile, outputfile, size, logger="bar"):
     size : list or tuple
       New size in format ``[width, height]`` for the output file.
     """
-    cmd = [
-        FFMPEG_BINARY,
-        "-i",
-        ffmpeg_escape_filename(inputfile),
-        "-vf",
-        "scale=%d:%d" % (size[0], size[1]),
-        ffmpeg_escape_filename(outputfile),
-    ]
-
-    subprocess_call(cmd, logger=logger)
+    pass
 
 
 @convert_path_to_string(("inputfile", "outputfile", "output_dir"))
@@ -190,25 +133,7 @@ def ffmpeg_stabilize_video(
       If ``outputfile`` already exists in ``output_dir``, then overwrite
       ``outputfile`` Defaults to True.
     """
-    if not outputfile:
-        without_dir = os.path.basename(inputfile)
-        name, ext = os.path.splitext(without_dir)
-        outputfile = f"{name}_stabilized{ext}"
-
-    outputfile = os.path.join(output_dir, outputfile)
-    cmd = [
-        FFMPEG_BINARY,
-        "-i",
-        ffmpeg_escape_filename(inputfile),
-        "-vf",
-        "deshake",
-        ffmpeg_escape_filename(outputfile),
-    ]
-
-    if overwrite_file:
-        cmd.append("-y")
-
-    subprocess_call(cmd, logger=logger)
+    pass
 
 
 def ffmpeg_version():
@@ -237,19 +162,7 @@ def ffmpeg_version():
     subprocess.CalledProcessError
         If the FFmpeg command fails to execute properly.
     """
-    cmd = [
-        FFMPEG_BINARY,
-        "-version",
-        "-v",
-        "quiet",
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-
-    # Extract the version number from the first line of output
-    full_version = result.stdout.splitlines()[0].split()[2]
-    numeric_version = re.match(r"^[0-9.]+", full_version).group(0)
-    return (full_version, numeric_version)
+    pass
 
 
 def ffplay_version():
@@ -278,13 +191,4 @@ def ffplay_version():
     subprocess.CalledProcessError
         If the FFplay command fails to execute properly.
     """
-    cmd = [
-        FFPLAY_BINARY,
-        "-version",
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    # Extract the version number from the first line of output
-    full_version = result.stdout.splitlines()[0].split()[2]
-    numeric_version = re.match(r"^[0-9.]+", full_version).group(0)
-    return (full_version, numeric_version)
+    pass

@@ -26,18 +26,4 @@ class Loop(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if clip.duration is None:
-            raise ValueError("Attribute 'duration' not set")
-
-        previous_duration = clip.duration
-        clip = clip.time_transform(
-            lambda t: t % previous_duration, apply_to=["mask", "audio"]
-        )
-
-        if self.n:
-            self.duration = self.n * previous_duration
-
-        if self.duration:
-            clip = clip.with_duration(self.duration)
-
-        return clip
+        pass

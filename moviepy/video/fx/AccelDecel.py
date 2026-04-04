@@ -51,33 +51,8 @@ class AccelDecel(Effect):
     def _f_accel_decel(
         self, t, old_duration, new_duration, abruptness=1.0, soonness=1.0
     ):
-        a = 1.0 + abruptness
-
-        def _f(t):
-            def f1(t):
-                return (0.5) ** (1 - a) * (t**a)
-
-            def f2(t):
-                return 1 - f1(1 - t)
-
-            return (t < 0.5) * f1(t) + (t >= 0.5) * f2(t)
-
-        return old_duration * _f((t / new_duration) ** soonness)
+        pass
 
     def apply(self, clip):
         """Apply the effect to the clip."""
-        if self.new_duration is None:
-            self.new_duration = clip.duration
-
-        if self.soonness < 0:
-            raise ValueError("'sooness' should be a positive number")
-
-        return clip.time_transform(
-            lambda t: self._f_accel_decel(
-                t=t,
-                old_duration=clip.duration,
-                new_duration=self.new_duration,
-                abruptness=self.abruptness,
-                soonness=self.soonness,
-            )
-        ).with_duration(self.new_duration)
+        pass

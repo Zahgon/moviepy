@@ -31,14 +31,4 @@ class MultiplyStereoVolume(Effect):
     @audio_video_effect
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-
-        def stereo_volume(get_frame, t):
-            frame = get_frame(t)
-            if len(frame) == 1:  # mono
-                frame *= self.left if self.left is not None else self.right
-            else:  # stereo, stereo surround...
-                for i in range(len(frame[0])):  # odd channels are left
-                    frame[:, i] *= self.left if i % 2 == 0 else self.right
-            return frame
-
-        return clip.transform(stereo_volume)
+        pass

@@ -18,14 +18,4 @@ class MultiplySpeed(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if self.final_duration:
-            self.factor = 1.0 * clip.duration / self.final_duration
-
-        new_clip = clip.time_transform(
-            lambda t: self.factor * t, apply_to=["mask", "audio"]
-        )
-
-        if clip.duration is not None:
-            new_clip = new_clip.with_duration(1.0 * clip.duration / self.factor)
-
-        return new_clip
+        pass

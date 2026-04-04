@@ -30,7 +30,7 @@ try:  # pragma: no cover
 except ImportError:
 
     def HTML2(content):  # noqa D103
-        return content
+        pass
 
     ipython_available = False
 
@@ -101,95 +101,7 @@ def html_embed(
         clip.save_frame("first_frame.jpeg")
         html_embed("first_frame.jpeg")
     """
-    if rd_kwargs is None:  # pragma: no cover
-        rd_kwargs = {}
-
-    if "Clip" in str(clip.__class__):
-        TEMP_PREFIX = "__temp__"
-        if isinstance(clip, ImageClip):
-            filename = TEMP_PREFIX + ".png"
-            kwargs = {"filename": filename, "with_mask": True}
-            argnames = inspect.getfullargspec(clip.save_frame).args
-            kwargs.update(
-                {key: value for key, value in rd_kwargs.items() if key in argnames}
-            )
-            clip.save_frame(**kwargs)
-        elif isinstance(clip, VideoClip):
-            filename = TEMP_PREFIX + ".mp4"
-            kwargs = {"filename": filename, "preset": "ultrafast"}
-            kwargs.update(rd_kwargs)
-            clip.write_videofile(**kwargs)
-        elif isinstance(clip, AudioClip):
-            filename = TEMP_PREFIX + ".mp3"
-            kwargs = {"filename": filename}
-            kwargs.update(rd_kwargs)
-            clip.write_audiofile(**kwargs)
-        else:
-            raise ValueError("Unknown class for the clip. Cannot embed and preview.")
-
-        return html_embed(
-            filename,
-            maxduration=maxduration,
-            rd_kwargs=rd_kwargs,
-            center=center,
-            **html_kwargs,
-        )
-
-    filename = clip
-    options = " ".join(["%s='%s'" % (str(k), str(v)) for k, v in html_kwargs.items()])
-    name, ext = os.path.splitext(filename)
-    ext = ext[1:]
-
-    if filetype is None:
-        ext = filename.split(".")[-1].lower()
-        if ext == "gif":
-            filetype = "image"
-        elif ext in extensions_dict:
-            filetype = extensions_dict[ext]["type"]
-        else:
-            raise ValueError(
-                "No file type is known for the provided file. Please provide "
-                "argument `filetype` (one of 'image', 'video', 'sound') to the "
-                "display_in_notebook function."
-            )
-
-    if filetype == "video":
-        # The next lines set the HTML5-cvompatible extension and check that the
-        # extension is HTML5-valid
-        exts_htmltype = {"mp4": "mp4", "webm": "webm", "ogv": "ogg"}
-        allowed_exts = " ".join(exts_htmltype.keys())
-        try:
-            ext = exts_htmltype[ext]
-        except Exception:
-            raise ValueError(
-                "This video extension cannot be displayed in the "
-                "Jupyter Notebook. Allowed extensions: " + allowed_exts
-            )
-
-    if filetype in ["audio", "video"]:
-        duration = ffmpeg_parse_infos(filename, decode_file=True)["duration"]
-        if duration > maxduration:
-            raise ValueError(
-                (
-                    "The duration of video %s (%.1f) exceeds the 'maxduration'"
-                    " attribute. You can increase 'maxduration', by passing"
-                    " 'maxduration' parameter to display_in_notebook function."
-                    " But note that embedding large videos may take all the memory"
-                    " away!"
-                )
-                % (filename, duration)
-            )
-
-    with open(filename, "rb") as file:
-        data = b64encode(file.read()).decode("utf-8")
-
-    template = templates[filetype]
-
-    result = template % {"data": data, "options": options, "ext": ext}
-    if center:
-        result = r"<div align=middle>%s</div>" % result
-
-    return result
+    pass
 
 
 def display_in_notebook(
@@ -260,25 +172,4 @@ def display_in_notebook(
         clip.save_frame("first_frame.jpeg")
         display_in_notebook("first_frame.jpeg")
     """
-    if not ipython_available:
-        raise ImportError("Only works inside an Jupyter Notebook")
-
-    if rd_kwargs is None:
-        rd_kwargs = {}
-
-    if fps is not None:
-        rd_kwargs["fps"] = fps
-
-    if t is not None:
-        clip = clip.to_ImageClip(t)
-
-    return HTML2(
-        html_embed(
-            clip,
-            filetype=filetype,
-            maxduration=maxduration,
-            center=center,
-            rd_kwargs=rd_kwargs,
-            **html_kwargs,
-        )
-    )
+    pass

@@ -28,28 +28,4 @@ class Freeze(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if clip.duration is None:
-            raise ValueError("Attribute 'duration' not set")
-
-        if self.t == "end":
-            self.t = clip.duration - self.padding_end - 1 / clip.fps
-
-        if self.freeze_duration is None:
-            if self.total_duration is None:
-                raise ValueError(
-                    "You must provide either 'freeze_duration' or 'total_duration'"
-                )
-            self.freeze_duration = self.total_duration - clip.duration
-
-        before = [clip[: self.t]] if (self.t != 0) else []
-        freeze = [clip.to_ImageClip(self.t).with_duration(self.freeze_duration)]
-        after = [clip[self.t :]] if (self.t != clip.duration) else []
-
-        new_clip = concatenate_videoclips(before + freeze + after)
-        if self.update_start_end:
-            if clip.start is not None:
-                new_clip = new_clip.with_start(clip.start)
-            if clip.end is not None:
-                new_clip = new_clip.with_end(clip.end + self.freeze_duration)
-
-        return new_clip
+        pass

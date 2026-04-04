@@ -15,13 +15,4 @@ class CrossFadeIn(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if clip.duration is None:
-            raise ValueError("Attribute 'duration' not set")
-
-        if clip.mask is None:
-            clip = clip.with_mask()
-
-        clip.mask.duration = clip.duration
-        clip.mask = clip.mask.with_effects([FadeIn(self.duration)])
-
-        return clip
+        pass

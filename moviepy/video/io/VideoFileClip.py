@@ -129,7 +129,7 @@ class VideoFileClip(VideoClip):
             self.frame_function = lambda t: self.reader.get_frame(t)[:, :, :3]
 
             def mask_frame_function(t):
-                return self.reader.get_frame(t)[:, :, 3] / 255.0
+                pass
 
             self.mask = VideoClip(
                 is_mask=True, frame_function=mask_frame_function
@@ -163,13 +163,4 @@ class VideoFileClip(VideoClip):
 
     def close(self):
         """Close the internal reader."""
-        if self.reader:
-            self.reader.close()
-            self.reader = None
-
-        try:
-            if self.audio:
-                self.audio.close()
-                self.audio = None
-        except AttributeError:  # pragma: no cover
-            pass
+        pass

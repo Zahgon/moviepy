@@ -49,16 +49,4 @@ class SlideOut(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if clip.duration is None:
-            raise ValueError("Attribute 'duration' not set")
-
-        w, h = clip.size
-        ts = clip.duration - self.duration  # start time of the effect.
-        pos_dict = {
-            "left": lambda t: (min(0, w * (-(t - ts) / self.duration)), "center"),
-            "right": lambda t: (max(0, w * ((t - ts) / self.duration)), "center"),
-            "top": lambda t: ("center", min(0, h * (-(t - ts) / self.duration))),
-            "bottom": lambda t: ("center", max(0, h * ((t - ts) / self.duration))),
-        }
-
-        return clip.with_position(pos_dict[self.side])
+        pass

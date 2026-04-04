@@ -36,17 +36,4 @@ class MasksAnd(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        # to ensure that 'and' of two ImageClips will be an ImageClip
-        if isinstance(self.other_clip, ImageClip):
-            self.other_clip = self.other_clip.img
-
-        if isinstance(self.other_clip, np.ndarray):
-            return clip.image_transform(
-                lambda frame: np.minimum(frame, self.other_clip)
-            )
-        else:
-            return clip.transform(
-                lambda get_frame, t: np.minimum(
-                    get_frame(t), self.other_clip.get_frame(t)
-                )
-            )
+        pass

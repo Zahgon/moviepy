@@ -16,12 +16,4 @@ class Blink(Effect):
 
     def apply(self, clip):
         """Apply the effect to the clip."""
-        if clip.mask is None:
-            clip = clip.with_mask()
-
-        duration = self.duration_on + self.duration_off
-        clip.mask = clip.mask.transform(
-            lambda get_frame, t: get_frame(t) * ((t % duration) < self.duration_on)
-        )
-
-        return clip
+        pass

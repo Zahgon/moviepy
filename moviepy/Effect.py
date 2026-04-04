@@ -26,7 +26,7 @@ class Effect(metaclass=ABCMeta):
 
         In a way, copy makes the effect himself being kind of idempotent.
         """
-        return _copy.copy(self)
+        pass
 
     @abstractmethod
     def apply(self, clip: Clip) -> Clip:

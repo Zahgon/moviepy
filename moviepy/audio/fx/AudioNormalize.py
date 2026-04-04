@@ -24,8 +24,4 @@ class AudioNormalize(Effect):
     @audio_video_effect
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        max_volume = clip.max_volume()
-        if max_volume == 0:
-            return clip
-        else:
-            return clip.with_effects([MultiplyVolume(1 / max_volume)])
+        pass

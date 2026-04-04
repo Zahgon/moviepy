@@ -18,6 +18,4 @@ class MultiplyColor(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        return clip.image_transform(
-            lambda frame: np.minimum(255, (self.factor * frame)).astype("uint8")
-        )
+        pass

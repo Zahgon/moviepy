@@ -12,9 +12,4 @@ class GammaCorrection(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-
-        def filter(im):
-            corrected = 255 * (1.0 * im / 255) ** self.gamma
-            return corrected.astype("uint8")
-
-        return clip.image_transform(filter)
+        pass

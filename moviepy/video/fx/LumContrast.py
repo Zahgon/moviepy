@@ -14,14 +14,4 @@ class LumContrast(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-
-        def image_filter(im):
-            im = 1.0 * im  # float conversion
-            corrected = (
-                im + self.lum + self.contrast * (im - float(self.contrast_threshold))
-            )
-            corrected[corrected < 0] = 0
-            corrected[corrected > 255] = 255
-            return corrected.astype("uint8")
-
-        return clip.image_transform(image_filter)
+        pass

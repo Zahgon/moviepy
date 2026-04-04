@@ -107,68 +107,11 @@ class FFMPEG_AudioWriter:
 
     def write_frames(self, frames_array):
         """Send the audio frame (a chunck of ``AudioClip``) to ffmpeg for writting"""
-        try:
-            self.proc.stdin.write(frames_array.tobytes())
-        except IOError as err:
-            _, ffmpeg_error = self.proc.communicate()
-            if ffmpeg_error is not None:
-                ffmpeg_error = ffmpeg_error.decode()
-            else:
-                # The error was redirected to a logfile with `write_logfile=True`,
-                # so read the error from that file instead
-                self.logfile.seek(0)
-                ffmpeg_error = self.logfile.read()
-
-            error = (
-                f"{err}\n\nMoviePy error: FFMPEG encountered the following error while "
-                f"writing file {self.filename}:\n\n {ffmpeg_error}"
-            )
-
-            if "Unknown encoder" in ffmpeg_error:
-                error += (
-                    "\n\nThe audio export failed because FFMPEG didn't find the "
-                    f"specified codec for audio encoding {self.codec}. "
-                    "Please install this codec or change the codec when calling "
-                    "write_videofile or write_audiofile.\nFor instance for mp3:\n"
-                    "   >>> write_videofile('myvid.mp4', audio_codec='libmp3lame')"
-                )
-
-            elif "incorrect codec parameters ?" in ffmpeg_error:
-                error += (
-                    "\n\nThe audio export failed, possibly because the "
-                    f"codec specified for the video {self.codec} is not compatible"
-                    f" with the given extension {self.ext}. Please specify a "
-                    "valid 'codec' argument in write_audiofile or 'audio_codoc'"
-                    "argument in write_videofile. This would be "
-                    "'libmp3lame' for mp3, 'libvorbis' for ogg..."
-                )
-
-            elif "bitrate not specified" in ffmpeg_error:
-                error += (
-                    "\n\nThe audio export failed, possibly because the "
-                    "bitrate you specified was too high or too low for "
-                    "the audio codec."
-                )
-
-            elif "Invalid encoder type" in ffmpeg_error:
-                error += (
-                    "\n\nThe audio export failed because the codec "
-                    "or file extension you provided is not suitable for audio"
-                )
-
-            raise IOError(error)
+        pass
 
     def close(self):
         """Closes the writer, terminating the subprocess if is still alive."""
-        if hasattr(self, "proc") and self.proc:
-            self.proc.stdin.close()
-            self.proc.stdin = None
-            if self.proc.stderr is not None:
-                self.proc.stderr.close()
-                self.proc.stderr = None
-            # If this causes deadlocks, consider terminating instead.
-            self.proc.wait()
-            self.proc = None
+        pass
 
     def __del__(self):
         # If the garbage collector comes, make sure the subprocess is terminated.
@@ -200,30 +143,4 @@ def ffmpeg_audiowrite(
     A function that wraps the FFMPEG_AudioWriter to write an AudioClip
     to a file.
     """
-    if write_logfile:
-        logfile = open(filename + ".log", "w+")
-    else:
-        logfile = None
-    logger = proglog.default_bar_logger(logger)
-    logger(message="MoviePy - Writing audio in %s" % filename)
-    writer = FFMPEG_AudioWriter(
-        filename,
-        fps,
-        nbytes,
-        clip.nchannels,
-        codec=codec,
-        bitrate=bitrate,
-        logfile=logfile,
-        ffmpeg_params=ffmpeg_params,
-    )
-
-    for chunk in clip.iter_chunks(
-        chunksize=buffersize, quantize=True, nbytes=nbytes, fps=fps, logger=logger
-    ):
-        writer.write_frames(chunk)
-
-    writer.close()
-
-    if write_logfile:
-        logfile.close()
-    logger(message="MoviePy - Done.")
+    pass

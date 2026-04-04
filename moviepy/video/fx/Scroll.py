@@ -40,18 +40,4 @@ class Scroll(Effect):
 
     def apply(self, clip):
         """Apply the effect to the clip."""
-        if self.h is None:
-            self.h = clip.h
-
-        if self.w is None:
-            self.w = clip.w
-
-        x_max = self.w - 1
-        y_max = self.h - 1
-
-        def filter(get_frame, t):
-            x = int(max(0, min(x_max, self.x_start + round(self.x_speed * t))))
-            y = int(max(0, min(y_max, self.y_start + round(self.y_speed * t))))
-            return get_frame(t)[y : y + self.h, x : x + self.w]
-
-        return clip.transform(filter, apply_to=self.apply_to)
+        pass

@@ -29,25 +29,7 @@ def subprocess_call(cmd, logger="bar"):
 
     Set logger to None or a custom Proglog logger to avoid printings.
     """
-    logger = proglog.default_bar_logger(logger)
-    logger(message="MoviePy - Running:\n>>> " + " ".join(cmd))
-
-    popen_params = cross_platform_popen_params(
-        {"stdout": sp.DEVNULL, "stderr": sp.PIPE, "stdin": sp.DEVNULL}
-    )
-
-    proc = sp.Popen(cmd, **popen_params)
-
-    out, err = proc.communicate()  # proc.wait()
-    proc.stderr.close()
-
-    if proc.returncode:
-        logger(message="MoviePy - Command returned an error")
-        raise IOError(err.decode("utf8"))
-    else:
-        logger(message="MoviePy - Command successful")
-
-    del proc
+    pass
 
 
 def ffmpeg_escape_filename(filename):
@@ -55,10 +37,7 @@ def ffmpeg_escape_filename(filename):
 
     That will ensure the filename doesn't start with a '-' (which would raise an error)
     """
-    if filename.startswith("-"):
-        filename = "./" + filename
-
-    return filename
+    pass
 
 
 def convert_to_seconds(time):
@@ -86,15 +65,7 @@ def convert_to_seconds(time):
         convert_to_seconds('33.5')      # only secs
         33.5
     """
-    factors = (1, 60, 3600)
-
-    if isinstance(time, str):
-        time = [float(part.replace(",", ".")) for part in time.split(":")]
-
-    if not isinstance(time, (tuple, list)):
-        return time
-
-    return sum(mult * part for mult, part in zip(factors, reversed(time)))
+    pass
 
 
 def deprecated_version_of(func, old_name):
@@ -122,22 +93,7 @@ def deprecated_version_of(func, old_name):
                 # blablabla
         Clip.to_file = deprecated_version_of(Clip.write_file, 'to_file')
     """
-    # Detect new name of func
-    new_name = func.__name__
-
-    warning = (
-        "The function ``%s`` is deprecated and is kept temporarily "
-        "for backwards compatibility.\nPlease use the new name, "
-        "``%s``, instead."
-    ) % (old_name, new_name)
-
-    def deprecated_func(*args, **kwargs):
-        warnings.warn("MoviePy: " + warning, PendingDeprecationWarning)
-        return func(*args, **kwargs)
-
-    deprecated_func.__doc__ = warning
-
-    return deprecated_func
+    pass
 
 
 # Non-exhaustive dictionary to store default information.
@@ -172,19 +128,7 @@ def find_extension(codec):
     codec : str
       Video or audio codec name.
     """
-    if codec in extensions_dict:
-        # codec is already the extension
-        return codec
-
-    for ext, infos in extensions_dict.items():
-        if codec in infos.get("codec", []):
-            return ext
-    raise ValueError(
-        "The audio_codec you chose is unknown by MoviePy. "
-        "You should report this. In the meantime, you can "
-        "specify a temp_audiofile with the right extension "
-        "in write_videofile."
-    )
+    pass
 
 
 def close_all_clips(objects="globals", types=("audio", "video", "image")):
@@ -207,24 +151,7 @@ def close_all_clips(objects="globals", types=("audio", "video", "image")):
       Set of types of clips to close, being "audio", "video" or "image" the supported
       values.
     """
-    from moviepy.audio.io.AudioFileClip import AudioFileClip
-    from moviepy.video.io.VideoFileClip import VideoFileClip
-    from moviepy.video.VideoClip import ImageClip
-
-    CLIP_TYPES = {
-        "audio": AudioFileClip,
-        "video": VideoFileClip,
-        "image": ImageClip,
-    }
-
-    if objects == "globals":  # pragma: no cover
-        objects = globals()
-    if hasattr(objects, "values"):
-        objects = objects.values()
-    types_tuple = tuple(CLIP_TYPES[key] for key in types)
-    for obj in objects:
-        if isinstance(obj, types_tuple):
-            obj.close()
+    pass
 
 
 def no_display_available() -> bool:
@@ -235,16 +162,7 @@ def no_display_available() -> bool:
         Currently this only works for Linux/BSD systems with X11 or wayland.
         It probably works for SunOS, AIX and CYGWIN
     """
-    system = platform.system()
-    if system in ["Linux", "FreeBSD", "NetBSD", "OpenBSD", "SunOS", "AIX"]:
-        if ("DISPLAY" not in os.environ) and ("WAYLAND_DISPLAY" not in os.environ):
-            return True
-
-    if "CYGWIN_NT" in system:
-        if ("DISPLAY" not in os.environ) and ("WAYLAND_DISPLAY" not in os.environ):
-            return True
-
-    return False
+    pass
 
 
 def compute_position(
@@ -273,42 +191,4 @@ def compute_position(
     -----
     For more information on `pos`, see the documentation for `VideoClip.with_position`.
     """
-    if pos is None:
-        pos = (0, 0)
-
-    # preprocess short writings of the position
-    if isinstance(pos, str):
-        pos = {
-            "center": ["center", "center"],
-            "left": ["left", "center"],
-            "right": ["right", "center"],
-            "top": ["center", "top"],
-            "bottom": ["center", "bottom"],
-        }[pos]
-    else:
-        pos = list(pos)
-
-    # is the position relative (given in % of the clip's size) ?
-    if relative:
-        for i, dim in enumerate(clip2_size):
-            if not isinstance(pos[i], str):
-                pos[i] = dim * pos[i]
-
-    if isinstance(pos[0], str):
-        D = {
-            "left": 0,
-            "center": (clip2_size[0] - clip1_size[0]) / 2,
-            "right": clip2_size[0] - clip1_size[0],
-        }
-        pos[0] = D[pos[0]]
-
-    if isinstance(pos[1], str):
-        D = {
-            "top": 0,
-            "center": (clip2_size[1] - clip1_size[1]) / 2,
-            "bottom": clip2_size[1] - clip1_size[1],
-        }
-        pos[1] = D[pos[1]]
-
-    # Return as int, rounding if necessary
-    return (int(pos[0]), int(pos[1]))
+    pass

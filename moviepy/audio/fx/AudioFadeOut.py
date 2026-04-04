@@ -35,28 +35,12 @@ class AudioFadeOut(Effect):
         self.duration = convert_to_seconds(self.duration)
 
     def _mono_factor_getter(self, clip_duration):
-        return lambda t, duration: np.minimum(1.0 * (clip_duration - t) / duration, 1)
+        pass
 
     def _stereo_factor_getter(self, clip_duration, nchannels):
-        def getter(t, duration):
-            factor = np.minimum(1.0 * (clip_duration - t) / duration, 1)
-            return np.array([factor for _ in range(nchannels)]).T
-
-        return getter
+        pass
 
     @audio_video_effect
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if clip.duration is None:
-            raise ValueError("Attribute 'duration' not set")
-
-        get_factor = (
-            self._mono_factor_getter(clip.duration)
-            if clip.nchannels == 1
-            else self._stereo_factor_getter(clip.duration, clip.nchannels)
-        )
-
-        return clip.transform(
-            lambda get_frame, t: get_factor(t, self.duration) * get_frame(t),
-            keep_duration=True,
-        )
+        pass

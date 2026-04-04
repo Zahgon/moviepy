@@ -123,24 +123,24 @@ class VideoClip(Clip):
     @property
     def w(self):
         """Returns the width of the video."""
-        return self.size[0]
+        pass
 
     @property
     def h(self):
         """Returns the height of the video."""
-        return self.size[1]
+        pass
 
     @property
     def aspect_ratio(self):
         """Returns the aspect ratio of the video."""
-        return self.w / float(self.h)
+        pass
 
     @property
     @requires_duration
     @requires_fps
     def n_frames(self):
         """Returns the number of frames of the video."""
-        return int(self.duration * self.fps)
+        pass
 
     def __copy__(self):
         """Mixed copy of the clip.
@@ -192,14 +192,7 @@ class VideoClip(Clip):
           If is ``True`` the mask is saved in the alpha layer of the picture
           (only works with PNGs).
         """
-        im = self.get_frame(t)
-        if with_mask and self.mask is not None:
-            mask = 255 * self.mask.get_frame(t)
-            im = np.dstack([im, mask]).astype("uint8")
-        else:
-            im = im.astype("uint8")
-
-        imwrite(filename, im)
+        pass
 
     @requires_duration
     @use_clip_fps_by_default
@@ -333,83 +326,7 @@ class VideoClip(Clip):
             clip.close()
 
         """
-        name, ext = os.path.splitext(os.path.basename(filename))
-        ext = ext[1:].lower()
-        logger = proglog.default_bar_logger(logger)
-
-        if codec is None:
-            try:
-                codec = extensions_dict[ext]["codec"][0]
-            except KeyError:
-                raise ValueError(
-                    "MoviePy couldn't find the codec associated "
-                    "with the filename. Provide the 'codec' "
-                    "parameter in write_videofile."
-                )
-
-        if audio_codec is None:
-            if ext in ["ogv", "webm"]:
-                audio_codec = "libvorbis"
-            else:
-                audio_codec = "libmp3lame"
-        elif audio_codec == "raw16":
-            audio_codec = "pcm_s16le"
-        elif audio_codec == "raw32":
-            audio_codec = "pcm_s32le"
-
-        audiofile = audio if isinstance(audio, str) else None
-        make_audio = (
-            (audiofile is None) and (audio is True) and (self.audio is not None)
-        )
-
-        if make_audio and temp_audiofile:
-            # The audio will be the clip's audio
-            audiofile = temp_audiofile
-        elif make_audio:
-            audio_ext = find_extension(audio_codec)
-            audiofile = os.path.join(
-                temp_audiofile_path,
-                name + Clip._TEMP_FILES_PREFIX + "wvf_snd.%s" % audio_ext,
-            )
-
-        # enough cpu for multiprocessing ? USELESS RIGHT NOW, WILL COME AGAIN
-        # enough_cpu = (multiprocessing.cpu_count() > 1)
-        logger(message="MoviePy - Building video %s." % filename)
-        if make_audio:
-            self.audio.write_audiofile(
-                audiofile,
-                audio_fps,
-                audio_nbytes,
-                audio_bufsize,
-                audio_codec,
-                bitrate=audio_bitrate,
-                write_logfile=write_logfile,
-                logger=logger,
-            )
-            # The audio is already encoded,
-            # so there is no need to encode it during video export
-            audio_codec = "copy"
-
-        ffmpeg_write_video(
-            self,
-            filename,
-            fps,
-            codec,
-            bitrate=bitrate,
-            preset=preset,
-            write_logfile=write_logfile,
-            audiofile=audiofile,
-            audio_codec=audio_codec,
-            threads=threads,
-            ffmpeg_params=ffmpeg_params,
-            logger=logger,
-            pixel_format=pixel_format,
-        )
-
-        if remove_temp and make_audio:
-            if os.path.exists(audiofile):
-                os.remove(audiofile)
-        logger(message="MoviePy - video ready %s" % filename)
+        pass
 
     @requires_duration
     @use_clip_fps_by_default
@@ -453,20 +370,7 @@ class VideoClip(Clip):
         ``ImageSequenceClip``.
 
         """
-        logger = proglog.default_bar_logger(logger)
-        # Fails on GitHub macos CI
-        # logger(message="MoviePy - Writing frames %s." % name_format)
-
-        timings = np.arange(0, self.duration, 1.0 / fps)
-
-        filenames = []
-        for i, t in logger.iter_bar(t=list(enumerate(timings))):
-            name = name_format % i
-            filenames.append(name)
-            self.save_frame(name, t, with_mask=with_mask)
-        # logger(message="MoviePy - Done writing frames %s." % name_format)
-
-        return filenames
+        pass
 
     @requires_duration
     @convert_masks_to_RGB
@@ -513,16 +417,7 @@ class VideoClip(Clip):
             myClip.multiply_speed(0.5).to_gif('myClip.gif')
 
         """
-        # A little sketchy at the moment, maybe move all that in write_gif,
-        #  refactor a little... we will see.
-
-        write_gif_with_imageio(
-            self,
-            filename,
-            fps=fps,
-            loop=loop,
-            logger=logger,
-        )
+        pass
 
     # ===============================================================
     # PREVIEW OPERATIONS
@@ -552,21 +447,7 @@ class VideoClip(Clip):
             clip = VideoFileClip("media/chaplin.mp4")
             clip.show(t=4)
         """
-        clip = self.copy()
-
-        # Warning : Comment to fix a bug on preview for compositevideoclip
-        # it broke compositevideoclip and it does nothing on normal clip with alpha
-
-        # if with_mask and (self.mask is not None):
-        #   # Hate it, but cannot figure a better way with python awful circular
-        #   # dependency
-        #   from mpy.video.compositing.CompositeVideoClip import CompositeVideoClip
-        #   clip = CompositeVideoClip([self.with_position((0, 0))])
-
-        frame = clip.get_frame(t)
-        pil_img = Image.fromarray(frame.astype("uint8"))
-
-        pil_img.show()
+        pass
 
     @requires_duration
     @convert_masks_to_RGB
@@ -607,35 +488,7 @@ class VideoClip(Clip):
             clip = VideoFileClip("media/chaplin.mp4")
             clip.preview(fps=10, audio=False)
         """
-        audio = audio and (self.audio is not None)
-        audio_flag = None
-        video_flag = None
-
-        if audio:
-            # the sound will be played in parallel. We are not
-            # parralellizing it on different CPUs because it seems that
-            # ffplay use several cpus.
-
-            # two synchro-flags to tell whether audio and video are ready
-            video_flag = threading.Event()
-            audio_flag = threading.Event()
-            # launch the thread
-            audiothread = threading.Thread(
-                target=self.audio.audiopreview,
-                args=(
-                    audio_fps,
-                    audio_buffersize,
-                    audio_nbytes,
-                    audio_flag,
-                    video_flag,
-                ),
-            )
-            audiothread.start()
-
-        # passthrough to ffmpeg, passing flag for ffmpeg to set
-        ffplay_preview_video(
-            clip=self, fps=fps, audio_flag=audio_flag, video_flag=video_flag
-        )
+        pass
 
     # -----------------------------------------------------------------
     # F I L T E R I N G
@@ -659,16 +512,7 @@ class VideoClip(Clip):
             new_clip = clip.with_sub_effect(MultiplySpeed(0.5), 3, 6)
 
         """
-        left = None if (start_time == 0) else self.subclipped(0, start_time)
-        center = self.subclipped(start_time, end_time).with_effects(effects, **kwargs)
-        right = None if (end_time is None) else self.subclipped(start_time=end_time)
-
-        clips = [clip for clip in [left, center, right] if clip is not None]
-
-        # beurk, have to find other solution
-        from moviepy.video.compositing.CompositeVideoClip import concatenate_videoclips
-
-        return concatenate_videoclips(clips).with_start(self.start)
+        pass
 
     # IMAGE FILTERS
 
@@ -676,8 +520,7 @@ class VideoClip(Clip):
         """Modifies the images of a clip by replacing the frame `get_frame(t)` by
         another frame,  `image_func(get_frame(t))`.
         """
-        apply_to = apply_to or []
-        return self.transform(lambda get_frame, t: image_func(get_frame(t)), apply_to)
+        pass
 
     # --------------------------------------------------------------
     # C O M P O S I T I N G
@@ -701,21 +544,7 @@ class VideoClip(Clip):
         shape (tuple)
           The desired shape of the resulting array.
         """
-        pre_shape = pre_array.shape
-        dx = shape[0] - pre_shape[0]
-        dy = shape[1] - pre_shape[1]
-        post_array = pre_array
-        if dx < 0:
-            post_array = pre_array[: shape[0]]
-        elif dx > 0:
-            x_1 = [[[1, 1, 1]] * pre_shape[1]] * dx
-            post_array = np.vstack((pre_array, x_1))
-        if dy < 0:
-            post_array = post_array[:, : shape[1]]
-        elif dy > 0:
-            x_1 = [[[1, 1, 1]] * dy] * post_array.shape[0]
-            post_array = np.hstack((post_array, x_1))
-        return post_array
+        pass
 
     def compose_on(self, background: Image.Image, t) -> Image.Image:
         """Returns the result of the clip's frame at time `t` on top
@@ -738,60 +567,7 @@ class VideoClip(Clip):
 
         Return
         """
-        ct = t - self.start  # clip time
-
-        # GET IMAGE AND MASK IF ANY
-        clip_frame = self.get_frame(ct).astype("uint8")
-        clip_img = Image.fromarray(clip_frame)
-
-        if self.mask is not None:
-            clip_mask = (self.mask.get_frame(ct) * 255).astype("uint8")
-            clip_mask_img = Image.fromarray(clip_mask).convert("L")
-
-            # Resize clip_mask_img to match clip_img, always use top left corner
-            if clip_mask_img.size != clip_img.size:
-                mask_width, mask_height = clip_mask_img.size
-                img_width, img_height = clip_img.size
-
-                if mask_width > img_width or mask_height > img_height:
-                    # Crop mask if it is larger
-                    clip_mask_img = clip_mask_img.crop((0, 0, img_width, img_height))
-                else:
-                    # Fill mask with 0 if it is smaller
-                    new_mask = Image.new("L", (img_width, img_height), 0)
-                    new_mask.paste(clip_mask_img, (0, 0))
-                    clip_mask_img = new_mask
-
-            clip_img = clip_img.convert("RGBA")
-            clip_img.putalpha(clip_mask_img)
-
-        # SET POSITION
-        pos = self.pos(ct)
-        pos = compute_position(clip_img.size, background.size, pos, self.relative_pos)
-
-        # If neither background nor clip have alpha layer (check if mode end
-        # with A), we can juste use pillow paste
-        if clip_img.mode[-1] != "A" and background.mode[-1] != "A":
-            background.paste(clip_img, pos)
-            return background
-
-        # For images with transparency we must use pillow alpha composite
-        # instead of a simple paste, because pillow paste dont work nicely
-        # with alpha compositing
-        if background.mode[-1] != "A":
-            background = background.convert("RGBA")
-
-        if clip_img.mode[-1] != "A":
-            clip_img = clip_img.convert("RGBA")
-
-        # We need both image to do the same size for alpha compositing in pillow
-        # so we must start by making a fully transparent canvas of background's
-        # size and paste our clip img into it in position pos, only then can we
-        # composite this canvas on top of background
-        canvas = Image.new("RGBA", (background.width, background.height), (0, 0, 0, 0))
-        canvas.paste(clip_img, pos)
-        result = Image.alpha_composite(background, canvas)
-        return result
+        pass
 
     def compose_mask(self, background_mask: np.ndarray, t: float) -> np.ndarray:
         """Returns the result of the clip's mask at time `t` composited
@@ -808,55 +584,7 @@ class VideoClip(Clip):
         t:
           The time position in the clip at which to extract the mask.
         """
-        ct = t - self.start  # clip time
-        clip_mask = self.get_frame(ct).astype("float")
-
-        # numpy shape is H*W not W*H
-        bg_h, bg_w = background_mask.shape
-        clip_h, clip_w = clip_mask.shape
-
-        # SET POSITION
-        pos = self.pos(ct)
-        pos = compute_position((clip_w, clip_h), (bg_w, bg_h), pos, self.relative_pos)
-
-        # ALPHA COMPOSITING
-        # Determine the base_mask region to merge size
-        x_start = int(max(pos[0], 0))  # Dont go under 0 left
-        x_end = int(min(pos[0] + clip_w, bg_w))  # Dont go over base_mask width
-        y_start = int(max(pos[1], 0))  # Dont go under 0 top
-        y_end = int(min(pos[1] + clip_h, bg_h))  # Dont go over base_mask height
-
-        # Determine the clip_mask region to overlapp
-        # Dont go under 0 for horizontal, if we have negative margin of X px start at X
-        # And dont go over clip width
-        clip_x_start = int(max(0, -pos[0]))
-        clip_x_end = int(clip_x_start + min((x_end - x_start), (clip_w - clip_x_start)))
-        # same for vertical
-        clip_y_start = int(max(0, -pos[1]))
-        clip_y_end = int(clip_y_start + min((y_end - y_start), (clip_h - clip_y_start)))
-
-        # Blend the overlapping regions
-        # The calculus is base_opacity + clip_opacity * (1 - base_opacity)
-        # this ensure that masks are drawn in the right order and
-        # the contribution of each mask is proportional to their transparency
-        #
-        # Note :
-        # Thinking in transparency is hard, as we tend to think
-        # that 50% opaque + 40% opaque = 90% opacity, when it really its 70%
-        # It's a lot easier to think in terms of "passing light"
-        # Consider I emit 100 photons, and my first layer is 50% opaque, meaning it
-        # will "stop" 50% of the photons, I'll have 50 photons left
-        # now my second layer is blocking 40% of thoses 50 photons left
-        # blocking 50 * 0.4 = 20 photons, and leaving me with only 30 photons
-        # So, by adding two layer of 50% and 40% opacity my finaly opacity is only
-        # of (100-30)*100 = 70% opacity !
-        background_mask[y_start:y_end, x_start:x_end] = background_mask[
-            y_start:y_end, x_start:x_end
-        ] + clip_mask[clip_y_start:clip_y_end, clip_x_start:clip_x_end] * (
-            1 - background_mask[y_start:y_end, x_start:x_end]
-        )
-
-        return background_mask
+        pass
 
     def with_background_color(self, size=None, color=(0, 0, 0), pos=None, opacity=None):
         """Place the clip on a colored background.
@@ -882,34 +610,7 @@ class VideoClip(Clip):
           Parameter in 0..1 indicating the opacity of the colored
           background.
         """
-        from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-
-        if size is None:
-            size = self.size
-        if pos is None:
-            pos = "center"
-
-        if opacity is not None:
-            colorclip = ColorClip(
-                size, color=color, duration=self.duration
-            ).with_opacity(opacity)
-            result = CompositeVideoClip([colorclip, self.with_position(pos)])
-        else:
-            result = CompositeVideoClip(
-                [self.with_position(pos)], size=size, bg_color=color
-            )
-
-        if (
-            isinstance(self, ImageClip)
-            and (not hasattr(pos, "__call__"))
-            and ((self.mask is None) or isinstance(self.mask, ImageClip))
-        ):
-            new_result = result.to_ImageClip()
-            if result.mask is not None:
-                new_result.mask = result.mask.to_ImageClip()
-            return new_result.with_duration(result.duration)
-
-        return result
+        pass
 
     @outplace
     def with_updated_frame_function(
@@ -920,8 +621,7 @@ class VideoClip(Clip):
         Returns a copy of the VideoClip instance, with the frame_function
         attribute set to `mf`.
         """
-        self.frame_function = frame_function
-        self.size = self.get_frame(0).shape[:2][::-1]
+        pass
 
     @outplace
     def with_audio(self, audioclip):
@@ -930,7 +630,7 @@ class VideoClip(Clip):
         Returns a copy of the VideoClip instance, with the `audio`
         attribute set to ``audio``, which must be an AudioClip instance.
         """
-        self.audio = audioclip
+        pass
 
     @outplace
     def with_mask(self, mask: Union["VideoClip", str] = "auto"):
@@ -949,21 +649,12 @@ class VideoClip(Clip):
             will be created.
             - Otherwise, a dynamic solid mask will be created based on the frame size.
         """
-        if mask == "auto":
-            if self.has_constant_size:
-                mask = ColorClip(self.size, 1.0, is_mask=True)
-            else:
-
-                def frame_function(t):
-                    return np.ones(self.get_frame(t).shape[:2], dtype=float)
-
-                mask = VideoClip(is_mask=True, frame_function=frame_function)
-        self.mask = mask
+        pass
 
     @outplace
     def without_mask(self):
         """Remove the clip's mask."""
-        self.mask = None
+        pass
 
     @add_mask_if_none
     @outplace
@@ -973,7 +664,7 @@ class VideoClip(Clip):
         Returns a semi-transparent copy of the clip where the mask is
         multiplied by ``op`` (any float, normally between 0 and 1).
         """
-        self.mask = self.mask.image_transform(lambda pic: opacity * pic)
+        pass
 
     @apply_to_mask
     @outplace
@@ -1003,11 +694,7 @@ class VideoClip(Clip):
             clip.with_position(lambda t: ('center', 50+t))
 
         """
-        self.relative_pos = relative
-        if hasattr(pos, "__call__"):
-            self.pos = pos
-        else:
-            self.pos = lambda t: pos
+        pass
 
     @apply_to_mask
     @outplace
@@ -1017,22 +704,13 @@ class VideoClip(Clip):
 
         Note: Only has effect when the clip is used in a CompositeVideoClip.
         """
-        self.layer_index = index
+        pass
 
     def resized(self, new_size=None, height=None, width=None, apply_to_mask=True):
         """Returns a video clip that is a resized version of the clip.
         For info on the parameters, please see ``vfx.Resize``
         """
-        return self.with_effects(
-            [
-                Resize(
-                    new_size=new_size,
-                    height=height,
-                    width=width,
-                    apply_to_mask=apply_to_mask,
-                )
-            ]
-        )
+        pass
 
     def rotated(
         self,
@@ -1049,19 +727,7 @@ class VideoClip(Clip):
         and ``bg_color`` are not ``None``.
         For info on the parameters, please see ``vfx.Rotate``
         """
-        return self.with_effects(
-            [
-                Rotate(
-                    angle=angle,
-                    unit=unit,
-                    resample=resample,
-                    expand=expand,
-                    center=center,
-                    translate=translate,
-                    bg_color=bg_color,
-                )
-            ]
-        )
+        pass
 
     def cropped(
         self,
@@ -1080,20 +746,7 @@ class VideoClip(Clip):
         All coordinates are in pixels. Float numbers are accepted.
         For info on the parameters, please see ``vfx.Crop``
         """
-        return self.with_effects(
-            [
-                Crop(
-                    x1=x1,
-                    y1=y1,
-                    x2=x2,
-                    y2=y2,
-                    width=width,
-                    height=height,
-                    x_center=x_center,
-                    y_center=y_center,
-                )
-            ]
-        )
+        pass
 
     # --------------------------------------------------------------
     # CONVERSIONS TO OTHER TYPES
@@ -1105,30 +758,15 @@ class VideoClip(Clip):
         which can be expressed in seconds (15.35), in (min, sec),
         in (hour, min, sec), or as a string: '01:03:05.35'.
         """
-        new_clip = ImageClip(self.get_frame(t), is_mask=self.is_mask, duration=duration)
-        if with_mask and self.mask is not None:
-            new_clip.mask = self.mask.to_ImageClip(t)
-        return new_clip
+        pass
 
     def to_mask(self, canal=0):
         """Return a mask a video clip made from the clip."""
-        if self.is_mask:
-            return self
-        else:
-            new_clip = self.image_transform(lambda pic: 1.0 * pic[:, :, canal] / 255)
-            new_clip.is_mask = True
-            return new_clip
+        pass
 
     def to_RGB(self):
         """Return a non-mask video clip made from the mask video clip."""
-        if self.is_mask:
-            new_clip = self.image_transform(
-                lambda pic: np.dstack(3 * [255 * pic]).astype("uint8")
-            )
-            new_clip.is_mask = False
-            return new_clip
-        else:
-            return self
+        pass
 
     # ----------------------------------------------------------------
     # Audio
@@ -1139,7 +777,7 @@ class VideoClip(Clip):
 
         Return a copy of the clip with audio set to None.
         """
-        self.audio = None
+        pass
 
     def __add__(self, other):
         if isinstance(other, VideoClip):
@@ -1216,7 +854,7 @@ class DataVideoClip(VideoClip):
         self.fps = fps
 
         def frame_function(t):
-            return self.data_to_frame(self.data[int(self.fps * t)])
+            pass
 
         VideoClip.__init__(
             self,
@@ -1265,9 +903,7 @@ class UpdatedVideoClip(VideoClip):
         self.world = world
 
         def frame_function(t):
-            while self.world.clip_t < t:
-                world.update()
-            return world.to_frame()
+            pass
 
         VideoClip.__init__(
             self, frame_function=frame_function, is_mask=is_mask, duration=duration
@@ -1351,15 +987,7 @@ class ImageClip(VideoClip):
         Equivalent to VideoClip.transform. The result is no more an
         ImageClip, it has the class VideoClip (since it may be animated)
         """
-        if apply_to is None:
-            apply_to = []
-        # When we use transform on an image clip it may become animated.
-        # Therefore the result is not an ImageClip, just a VideoClip.
-        new_clip = VideoClip.transform(
-            self, func, apply_to=apply_to, keep_duration=keep_duration
-        )
-        new_clip.__class__ = VideoClip
-        return new_clip
+        pass
 
     @outplace
     def image_transform(self, image_func, apply_to=None):
@@ -1369,18 +997,7 @@ class ImageClip(VideoClip):
         transformed clip is computed once and for all at the beginning,
         and not for each 'frame'.
         """
-        if apply_to is None:
-            apply_to = []
-        arr = image_func(self.get_frame(0))
-        self.size = arr.shape[:2][::-1]
-        self.frame_function = lambda t: arr
-        self.img = arr
-
-        for attr in apply_to:
-            a = getattr(self, attr, None)
-            if a is not None:
-                new_a = a.image_transform(image_func)
-                setattr(self, attr, new_a)
+        pass
 
     @outplace
     def time_transform(self, time_func, apply_to=None, keep_duration=False):
@@ -1392,13 +1009,7 @@ class ImageClip(VideoClip):
         This method does nothing for ImageClips (but it may affect their
         masks or their audios). The result is still an ImageClip.
         """
-        if apply_to is None:
-            apply_to = ["mask", "audio"]
-        for attr in apply_to:
-            a = getattr(self, attr, None)
-            if a is not None:
-                new_a = a.time_transform(time_func)
-                setattr(self, attr, new_a)
+        pass
 
 
 class ColorClip(ImageClip):
@@ -1770,53 +1381,7 @@ class TextClip(ImageClip):
         self, width, text, font, font_size, stroke_width, align, spacing
     ) -> List[str]:
         """Break text to never overflow a width"""
-        img = Image.new("RGB", (1, 1))
-        if font:
-            font_pil = ImageFont.truetype(font, font_size)
-        else:
-            font_pil = ImageFont.load_default(font_size)
-        draw = ImageDraw.Draw(img)
-
-        lines = []
-        current_line = ""
-
-        # We try to break on spaces as much as possible
-        # if a text dont contain spaces (ex chinese), we will break when possible
-        last_space = 0
-        for index, char in enumerate(text):
-            if char == " ":
-                last_space = index
-
-            temp_line = current_line + char
-            temp_left, temp_top, temp_right, temp_bottom = draw.multiline_textbbox(
-                (0, 0),
-                temp_line,
-                font=font_pil,
-                spacing=spacing,
-                align=align,
-                stroke_width=stroke_width,
-            )
-            temp_width = temp_right - temp_left
-
-            if temp_width >= width:
-                # If we had a space previously, add everything up to the space
-                # and reset last_space and current_line else add everything up
-                # to previous char
-                if last_space:
-                    lines.append(temp_line[0:last_space])
-                    current_line = temp_line[last_space + 1 : index + 1]
-                    last_space = 0
-                else:
-                    lines.append(current_line[0:index])
-                    current_line = char
-                    last_space = 0
-            else:
-                current_line = temp_line
-
-        if current_line:
-            lines.append(current_line)
-
-        return lines
+        pass
 
     def __find_text_size(
         self,
@@ -1871,53 +1436,7 @@ class TextClip(ImageClip):
             or:
               ``real_font_size + (stroke_width * 2) + (lines - 1) * height``
         """
-        img = Image.new("RGB", (1, 1))
-        if font:
-            font_pil = ImageFont.truetype(font, font_size)
-        else:
-            font_pil = ImageFont.load_default(font_size)
-        ascent, descent = font_pil.getmetrics()
-        real_font_size = ascent + descent
-        draw = ImageDraw.Draw(img)
-
-        # Compute individual line height with spaces using pillow internal method
-
-        if max_width is not None and allow_break:
-            lines = self.__break_text(
-                width=max_width,
-                text=text,
-                font=font,
-                font_size=font_size,
-                stroke_width=stroke_width,
-                align=align,
-                spacing=spacing,
-            )
-
-            text = "\n".join(lines)
-
-        # Use multiline textbbox to get width
-        left, top, right, bottom = draw.multiline_textbbox(
-            (0, 0),
-            text,
-            font=font_pil,
-            spacing=spacing,
-            align=align,
-            stroke_width=stroke_width,
-            anchor="ls",
-        )
-
-        # For height calculate manually as textbbox is not realiable
-        try:
-            # this disappeared in more recent versions of Pillow
-            line_height = draw._multiline_spacing(font_pil, spacing, stroke_width)
-            line_breaks = text.count("\n")
-            lines_height = line_breaks * line_height
-            paddings = real_font_size + stroke_width * 2
-            height = int(lines_height + paddings)
-        except AttributeError:
-            height = int(bottom - top)
-
-        return (int(right - left), height)
+        pass
 
     def __find_optimum_font_size(
         self,
@@ -1933,43 +1452,7 @@ class TextClip(ImageClip):
         """Find the best font size to fit as optimally as possible
         in a box of some width and optionally height
         """
-        max_font_size = width
-        min_font_size = 1
-
-        # Try find best size using bisection
-        while min_font_size < max_font_size:
-            avg_font_size = int((max_font_size + min_font_size) // 2)
-            text_width, text_height = self.__find_text_size(
-                text,
-                font,
-                avg_font_size,
-                stroke_width,
-                align,
-                spacing,
-                max_width=width,
-                allow_break=allow_break,
-            )
-
-            if text_width <= width and (height is None or text_height <= height):
-                min_font_size = avg_font_size + 1
-            else:
-                max_font_size = avg_font_size - 1
-
-        # Check if the last font size tested fits within the given width and height
-        text_width, text_height = self.__find_text_size(
-            text,
-            font,
-            min_font_size,
-            stroke_width,
-            align,
-            spacing,
-            max_width=width,
-            allow_break=allow_break,
-        )
-        if text_width <= width and (height is None or text_height <= height):
-            return min_font_size
-        else:
-            return min_font_size - 1
+        pass
 
 
 class BitmapClip(VideoClip):
@@ -2075,17 +1558,4 @@ class BitmapClip(VideoClip):
         If `color_dict` is not specified, then it will use the same `color_dict`
         that was used to create the clip.
         """
-        color_dict = color_dict or self.color_dict
-
-        bitmap = []
-        for frame in self.iter_frames():
-            bitmap.append([])
-            for line in frame:
-                bitmap[-1].append("")
-                for pixel in line:
-                    letter = list(color_dict.keys())[
-                        list(color_dict.values()).index(tuple(pixel))
-                    ]
-                    bitmap[-1][-1] += letter
-
-        return bitmap
+        pass

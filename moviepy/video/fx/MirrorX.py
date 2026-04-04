@@ -13,4 +13,4 @@ class MirrorX(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        return clip.image_transform(lambda img: img[:, ::-1], apply_to=self.apply_to)
+        pass

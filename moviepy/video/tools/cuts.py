@@ -37,14 +37,7 @@ def find_video_period(clip, fps=None, start_time=0.3):
         round(videotools.find_video_period(clip, fps=80), 6)
         1
     """
-
-    def frame(t):
-        return clip.get_frame(t).flatten()
-
-    timings = np.arange(start_time, clip.duration, 1 / fps)[1:]
-    ref = frame(0)
-    corrs = [np.corrcoef(ref, frame(t))[0, 1] for t in timings]
-    return timings[np.argmax(corrs)]
+    pass
 
 
 class FramesMatch:
@@ -139,9 +132,7 @@ class FramesMatches(list):
           FramesMatch.
 
         """
-        if percent is not None:
-            n = len(self) * percent / 100
-        return self[0] if n == 1 else FramesMatches(self[: int(n)])
+        pass
 
     def filter(self, condition):
         """Return a FramesMatches object obtained by filtering out the
@@ -161,7 +152,7 @@ class FramesMatches(list):
             # Only keep the matches corresponding to (> 1 second) sequences.
             new_matches = matches.filter(lambda match: match.time_span > 1)
         """
-        return FramesMatches(filter(condition, self))
+        pass
 
     def save(self, filename):
         """Save a FramesMatches object to a file.
@@ -172,12 +163,7 @@ class FramesMatches(list):
         filename : str
           Path to the file in which will be dumped the FramesMatches object data.
         """
-        np.savetxt(
-            filename,
-            np.array([np.array(list(e)) for e in self]),
-            fmt="%.03f",
-            delimiter="\t",
-        )
+        pass
 
     @staticmethod
     def load(filename):
@@ -193,9 +179,7 @@ class FramesMatches(list):
         --------
         >>> matching_frames = FramesMatches.load("somefile")
         """
-        arr = np.loadtxt(filename)
-        mfs = [FramesMatch(*e) for e in arr]
-        return FramesMatches(mfs)
+        pass
 
     @staticmethod
     def from_clip(clip, distance_threshold, max_duration, fps=None, logger="bar"):
@@ -245,72 +229,7 @@ class FramesMatches(list):
             best = matches.filter(lambda m: m.time_span > 1.5).best()
             clip.subclipped(best.start_time, best.end_time).write_gif("foo.gif")
         """
-        N_pixels = clip.w * clip.h * 3
-
-        def dot_product(F1, F2):
-            return (F1 * F2).sum() / N_pixels
-
-        frame_dict = {}  # will store the frames and their mutual distances
-
-        def distance(t1, t2):
-            uv = dot_product(frame_dict[t1]["frame"], frame_dict[t2]["frame"])
-            u, v = frame_dict[t1]["|F|sq"], frame_dict[t2]["|F|sq"]
-            return np.sqrt(u + v - 2 * uv)
-
-        matching_frames = []  # the final result.
-
-        for t, frame in clip.iter_frames(with_times=True, logger=logger):
-            flat_frame = 1.0 * frame.flatten()
-            F_norm_sq = dot_product(flat_frame, flat_frame)
-            F_norm = np.sqrt(F_norm_sq)
-
-            for t2 in list(frame_dict.keys()):
-                # forget old frames, add 't' to the others frames
-                # check for early rejections based on differing norms
-                if (t - t2) > max_duration:
-                    frame_dict.pop(t2)
-                else:
-                    frame_dict[t2][t] = {
-                        "min": abs(frame_dict[t2]["|F|"] - F_norm),
-                        "max": frame_dict[t2]["|F|"] + F_norm,
-                    }
-                    frame_dict[t2][t]["rejected"] = (
-                        frame_dict[t2][t]["min"] > distance_threshold
-                    )
-
-            t_F = sorted(frame_dict.keys())
-
-            frame_dict[t] = {"frame": flat_frame, "|F|sq": F_norm_sq, "|F|": F_norm}
-
-            for i, t2 in enumerate(t_F):
-                # Compare F(t) to all the previous frames
-
-                if frame_dict[t2][t]["rejected"]:
-                    continue
-
-                dist = distance(t, t2)
-                frame_dict[t2][t]["min"] = frame_dict[t2][t]["max"] = dist
-                frame_dict[t2][t]["rejected"] = dist >= distance_threshold
-
-                for t3 in t_F[i + 1 :]:
-                    # For all the next times t3, use d(F(t), F(end_time)) to
-                    # update the bounds on d(F(t), F(t3)). See if you can
-                    # conclude on whether F(t) and F(t3) match.
-                    t3t, t2t3 = frame_dict[t3][t], frame_dict[t2][t3]
-                    t3t["max"] = min(t3t["max"], dist + t2t3["max"])
-                    t3t["min"] = max(t3t["min"], dist - t2t3["max"], t2t3["min"] - dist)
-
-                    if t3t["min"] > distance_threshold:
-                        t3t["rejected"] = True
-
-            # Store all the good matches (end_time,t)
-            matching_frames += [
-                (t1, t, frame_dict[t1][t]["min"], frame_dict[t1][t]["max"])
-                for t1 in frame_dict
-                if (t1 != t) and not frame_dict[t1][t]["rejected"]
-            ]
-
-        return FramesMatches([FramesMatch(*e) for e in matching_frames])
+        pass
 
     def select_scenes(
         self, match_threshold, min_time_span, nomatch_threshold=None, time_distance=0
@@ -363,56 +282,7 @@ class FramesMatches(list):
             #  (1.2800, 3.7200, 0.0000, 0.0000),
             #  (1.4000, 3.6000, 0.0000, 0.0000)]
         """
-        if nomatch_threshold is None:
-            nomatch_threshold = match_threshold
-
-        dict_starts = defaultdict(lambda: [])
-        for start, end, min_distance, max_distance in self:
-            dict_starts[start].append([end, min_distance, max_distance])
-
-        starts_ends = sorted(dict_starts.items(), key=lambda k: k[0])
-
-        result = []
-        min_start = 0
-        for start, ends_distances in starts_ends:
-            if start < min_start:
-                continue
-
-            ends = [end for (end, min_distance, max_distance) in ends_distances]
-            great_matches = [
-                (end, min_distance, max_distance)
-                for (end, min_distance, max_distance) in ends_distances
-                if max_distance < match_threshold
-            ]
-
-            great_long_matches = [
-                (end, min_distance, max_distance)
-                for (end, min_distance, max_distance) in great_matches
-                if (end - start) > min_time_span
-            ]
-
-            if not great_long_matches:
-                continue  # No GIF can be made starting at this time
-
-            poor_matches = {
-                end
-                for (end, min_distance, max_distance) in ends_distances
-                if min_distance > nomatch_threshold
-            }
-            short_matches = {end for end in ends if (end - start) <= 0.6}
-
-            if not poor_matches.intersection(short_matches):
-                continue
-
-            end = max(end for (end, min_distance, max_distance) in great_long_matches)
-            end, min_distance, max_distance = next(
-                e for e in great_long_matches if e[0] == end
-            )
-
-            result.append(FramesMatch(start, end, min_distance, max_distance))
-            min_start = start + time_distance
-
-        return FramesMatches(result)
+        pass
 
     def write_gifs(self, clip, gifs_dir, **kwargs):
         """Extract the matching frames represented by the instance from a clip
@@ -454,9 +324,7 @@ class FramesMatches(list):
             # MoviePy - Building file foo/00000128_00000372.gif with imageio.
             # MoviePy - Building file foo/00000140_00000360.gif with imageio.
         """
-        for start, end, _, _ in self:
-            name = "%s/%08d_%08d.gif" % (gifs_dir, 100 * start, 100 * end)
-            clip.subclipped(start, end).write_gif(name, **kwargs)
+        pass
 
 
 @use_clip_fps_by_default
@@ -502,21 +370,4 @@ def detect_scenes(
       Frames per second value. Must be provided if you provide
       no clip or a clip without fps attribute.
     """
-    if luminosities is None:
-        luminosities = [
-            f.sum() for f in clip.iter_frames(fps=fps, dtype="uint32", logger=logger)
-        ]
-
-    luminosities = np.array(luminosities, dtype=float)
-    if clip is not None:
-        end = clip.duration
-    else:
-        end = len(luminosities) * (1.0 / fps)
-    luminosity_diffs = abs(np.diff(luminosities))
-    avg = luminosity_diffs.mean()
-    luminosity_jumps = (
-        1 + np.array(np.nonzero(luminosity_diffs > luminosity_threshold * avg))[0]
-    )
-    timings = [0] + list((1.0 / fps) * luminosity_jumps) + [end]
-    cuts = [(t1, t2) for t1, t2 in zip(timings, timings[1:])]
-    return cuts, luminosities
+    pass

@@ -27,19 +27,4 @@ class MaskColor(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        color = np.array(self.color)
-
-        def hill(x):
-            if self.threshold:
-                return x**self.stiffness / (
-                    self.threshold**self.stiffness + x**self.stiffness
-                )
-            else:
-                return 1.0 * (x != 0)
-
-        def flim(im):
-            return hill(np.sqrt(((im - color) ** 2).sum(axis=2)))
-
-        mask = clip.image_transform(flim)
-        mask.is_mask = True
-        return clip.with_mask(mask)
+        pass

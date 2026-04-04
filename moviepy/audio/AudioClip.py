@@ -93,25 +93,7 @@ class AudioClip(Clip):
         logger=None,
     ):
         """Iterator that returns the whole sound array of the clip by chunks"""
-        if fps is None:
-            fps = self.fps
-        logger = proglog.default_bar_logger(logger)
-        if chunk_duration is not None:
-            chunksize = int(chunk_duration * fps)
-
-        total_size = int(fps * self.duration)
-
-        nchunks = total_size // chunksize + 1
-
-        positions = np.linspace(0, total_size, nchunks + 1, endpoint=True, dtype=int)
-
-        for i in logger.iter_bar(chunk=list(range(nchunks))):
-            size = positions[i + 1] - positions[i]
-            assert size <= chunksize
-            timings = (1.0 / fps) * np.arange(positions[i], positions[i + 1])
-            yield self.to_soundarray(
-                timings, nbytes=nbytes, quantize=quantize, fps=fps, buffersize=chunksize
-            )
+        pass
 
     @requires_duration
     def to_soundarray(
@@ -133,51 +115,11 @@ class AudioClip(Clip):
           2 for 16bit, 4 for 32bit sound.
 
         """
-        if tt is None:
-            if fps is None:
-                fps = self.fps
-
-            max_duration = 1 * buffersize / fps
-            if self.duration > max_duration:
-                stacker = np.vstack if self.nchannels == 2 else np.hstack
-                return stacker(
-                    tuple(
-                        self.iter_chunks(
-                            fps=fps, quantize=quantize, nbytes=2, chunksize=buffersize
-                        )
-                    )
-                )
-            else:
-                tt = np.arange(0, self.duration, 1.0 / fps)
-        """
-        elif len(tt)> 1.5*buffersize:
-            nchunks = int(len(tt)/buffersize+1)
-            tt_chunks = np.array_split(tt, nchunks)
-            return stacker([self.to_soundarray(tt=ttc, buffersize=buffersize, fps=fps,
-                                        quantize=quantize, nbytes=nbytes)
-                              for ttc in tt_chunks])
-        """
-        snd_array = self.get_frame(tt)
-
-        if quantize:
-            snd_array = np.maximum(-0.99, np.minimum(0.99, snd_array))
-            inttype = {1: "int8", 2: "int16", 4: "int32"}[nbytes]
-            snd_array = (2 ** (8 * nbytes - 1) * snd_array).astype(inttype)
-
-        return snd_array
+        pass
 
     def max_volume(self, stereo=False, chunksize=50000, logger=None):
         """Returns the maximum volume level of the clip."""
-        # max volume separated by channels if ``stereo`` and not mono
-        stereo = stereo and self.nchannels > 1
-
-        # zero for each channel
-        maxi = np.zeros(self.nchannels)
-        for chunk in self.iter_chunks(chunksize=chunksize, logger=logger):
-            maxi = np.maximum(maxi, abs(chunk).max(axis=0))
-
-        # if mono returns float, otherwise array of volumes by channel
-        return maxi if stereo else maxi[0]
+        pass
 
     @requires_duration
     @convert_path_to_string("filename")
@@ -238,35 +180,7 @@ class AudioClip(Clip):
           Either ``"bar"`` for progress bar or ``None`` or any Proglog logger.
 
         """
-        if not fps:
-            if hasattr(self, "fps"):
-                fps = self.fps
-            else:
-                fps = 44100
-
-        if codec is None:
-            name, ext = os.path.splitext(os.path.basename(filename))
-            try:
-                codec = extensions_dict[ext[1:]]["codec"][0]
-            except KeyError:
-                raise ValueError(
-                    "MoviePy couldn't find the codec associated "
-                    "with the filename. Provide the 'codec' "
-                    "parameter in write_audiofile."
-                )
-
-        return ffmpeg_audiowrite(
-            self,
-            filename,
-            fps,
-            nbytes,
-            buffersize,
-            codec=codec,
-            bitrate=bitrate,
-            write_logfile=write_logfile,
-            ffmpeg_params=ffmpeg_params,
-            logger=logger,
-        )
+        pass
 
     @requires_duration
     def audiopreview(
@@ -298,14 +212,7 @@ class AudioClip(Clip):
             Instances of class threading events that are used to synchronize
             video and audio during ``VideoClip.preview()``.
         """
-        ffplay_audiopreview(
-            clip=self,
-            fps=fps,
-            buffersize=buffersize,
-            nbytes=nbytes,
-            audio_flag=audio_flag,
-            video_flag=video_flag,
-        )
+        pass
 
     def __add__(self, other):
         if isinstance(other, AudioClip):
@@ -341,18 +248,7 @@ class AudioArrayClip(AudioClip):
             """Complicated, but must be able to handle the case where t
             is a list of the form sin(t).
             """
-            if isinstance(t, np.ndarray):
-                array_inds = np.round(self.fps * t).astype(int)
-                in_array = (array_inds >= 0) & (array_inds < len(self.array))
-                result = np.zeros((len(t), 2))
-                result[in_array] = self.array[array_inds[in_array]]
-                return result
-            else:
-                i = int(self.fps * t)
-                if i < 0 or i >= len(self.array):
-                    return 0 * self.array[0]
-                else:
-                    return self.array[i]
+            pass
 
         self.frame_function = frame_function
         self.nchannels = len(list(self.get_frame(0)))
@@ -395,29 +291,16 @@ class CompositeAudioClip(AudioClip):
     @property
     def starts(self):
         """Returns starting times for all clips in the composition."""
-        return (clip.start for clip in self.clips)
+        pass
 
     @property
     def ends(self):
         """Returns ending times for all clips in the composition."""
-        return (clip.end for clip in self.clips)
+        pass
 
     def frame_function(self, t):
         """Renders a frame for the composition for the time ``t``."""
-        played_parts = [clip.is_playing(t) for clip in self.clips]
-
-        sounds = [
-            clip.get_frame(t - clip.start) * np.array([part]).T
-            for clip, part in zip(self.clips, played_parts)
-            if (part is not False)
-        ]
-
-        if isinstance(t, np.ndarray):
-            zero = np.zeros((len(t), self.nchannels))
-        else:
-            zero = np.zeros(self.nchannels)
-
-        return zero + sum(sounds)
+        pass
 
 
 def concatenate_audioclips(clips):
@@ -430,8 +313,4 @@ def concatenate_audioclips(clips):
     clips
       List of audio clips, which will be played one after other.
     """
-    # start, end/start2, end2/start3... end
-    starts_end = np.cumsum([0, *[clip.duration for clip in clips]])
-    newclips = [clip.with_start(t) for clip, t in zip(clips, starts_end[:-1])]
-
-    return CompositeAudioClip(newclips).with_duration(starts_end[-1])
+    pass

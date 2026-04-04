@@ -21,16 +21,4 @@ class FadeIn(Effect):
 
     def apply(self, clip: Clip) -> Clip:
         """Apply the effect to the clip."""
-        if self.initial_color is None:
-            self.initial_color = 0 if clip.is_mask else [0, 0, 0]
-
-        self.initial_color = np.array(self.initial_color)
-
-        def filter(get_frame, t):
-            if t >= self.duration:
-                return get_frame(t)
-            else:
-                fading = 1.0 * t / self.duration
-                return fading * get_frame(t) + (1 - fading) * self.initial_color
-
-        return clip.transform(filter)
+        pass

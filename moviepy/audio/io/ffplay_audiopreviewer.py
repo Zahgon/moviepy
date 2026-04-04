@@ -70,31 +70,11 @@ class FFPLAY_AudioPreviewer:
 
     def write_frames(self, frames_array):
         """Send a raw audio frame (a chunck of audio) to ffplay to be played"""
-        try:
-            self.proc.stdin.write(frames_array.tobytes())
-        except IOError as err:
-            _, ffplay_error = self.proc.communicate()
-            if ffplay_error is not None:
-                ffplay_error = ffplay_error.decode()
-
-            error = (
-                f"{err}\n\nMoviePy error: FFPLAY encountered the following error while "
-                f":\n\n {ffplay_error}"
-            )
-
-            raise IOError(error)
+        pass
 
     def close(self):
         """Closes the writer, terminating the subprocess if is still alive."""
-        if hasattr(self, "proc") and self.proc:
-            self.proc.stdin.close()
-            self.proc.stdin = None
-            if self.proc.stderr is not None:
-                self.proc.stderr.close()
-                self.proc.stderr = None
-            # If this causes deadlocks, consider terminating instead.
-            self.proc.wait()
-            self.proc = None
+        pass
 
     def __del__(self):
         # If the garbage collector comes, make sure the subprocess is terminated.
@@ -139,25 +119,4 @@ def ffplay_audiopreview(
       Instances of class threading events that are used to synchronize
       video and audio during ``VideoClip.preview()``.
     """
-    if not fps:
-        if not clip.fps:
-            fps = 44100
-        else:
-            fps = clip.fps
-
-    with FFPLAY_AudioPreviewer(fps, nbytes, clip.nchannels) as previewer:
-        first_frame = True
-        for chunk in clip.iter_chunks(
-            chunksize=buffersize, quantize=True, nbytes=nbytes, fps=fps
-        ):
-            # On first frame, wait for video
-            if first_frame:
-                first_frame = False
-
-                if audio_flag is not None:
-                    audio_flag.set()  # Say to video that audio is ready
-
-                if video_flag is not None:
-                    video_flag.wait()  # Wait for video to be ready
-
-            previewer.write_frames(chunk)
+    pass
